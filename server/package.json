@@ -1,0 +1,35 @@
+{
+  "name": "secureaccess_dev01-alan_s01_server-first-api",
+  "version": "1.02",
+  "description": "Express API server modules",
+  "keywords": [
+    "express",
+    "mysql",
+    "api",
+    "users"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.5",
+    "speakeasy": "^2.0.0",
+    "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "nodemon": "^3.0.1"
+  },
+  "scripts": {
+    "start:s01": "nodemon s01_server-first-api/server.js",
+    "start:s03": "nodemon s03_register-cors-api/server.mjs"
+  }
+}

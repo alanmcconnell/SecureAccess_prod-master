@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAccess - Application Users</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        .left-panel {
+            width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .app-item {
+            padding: 8px 10px;
+            margin-bottom: 3px;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .app-item:hover {
+            background: #e3f2fd;
+            border-color: #667eea;
+        }
+
+        .app-item.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .app-item .name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .right-panel {
+            flex: 1;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        .form-container {
+            max-width: 800px;
+        }
+
+        .form-section {
+            margin-bottom: 12px;
+        }
+
+        .form-section.boxed {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fafafa;
+        }
+
+        .form-section h3 {
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .form-group.full-width {
+            flex: 100%;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 3px;
+            color: #333;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .user-grid {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .user-item {
+            padding: 6px 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+        }
+
+        .user-item:hover {
+            background: #f8f9fa;
+        }
+
+        .user-item.selected {
+            background: #e3f2fd;
+            color: #333;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .date-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .date-row .form-group {
+            flex: 1;
+        }
+
+        .action-buttons {
+            padding: 12px;
+            background: #f8f9fa;
+            border-top: 1px solid #e1e5e9;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 80px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                width: 100%;
+                max-height: 250px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .form-group {
+                min-width: auto;
+            }
+
+            .right-panel {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SecureAccess - Application Users</h1>
+            <button type="button" class="btn btn-primary" id="returnBtn">Return</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel - Application Grid -->
+            <div class="left-panel">
+                <div class="app-grid" id="appGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading applications...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - User Management -->
+            <div class="right-panel">
+                <div class="alert" id="alert"></div>
+                
+                <div class="loading" id="formLoading">
+                    <div class="spinner"></div>
+                    <p>Loading application data...</p>
+                </div>
+
+                <div class="form-container" id="formContainer" style="display: none;">
+                    <!-- Application Description -->
+                    <div class="form-section">
+                        <h3>Application Information</h3>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <textarea id="appDescription" readonly style="background: #f8f9fa;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Assignment Form -->
+                    <div class="form-section boxed">
+                        <h3>Assign User to Application</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="userSelect">User Name:</label>
+                                <select id="userSelect">
+                                    <option value="">Select a user...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="appRoleSelect">Application Security Role:</label>
+                                <select id="appRoleSelect">
+                                    <option value="">Select a role...</option>
+                                </select>
+                                <small style="color: #666; font-size: 11px; margin-top: 3px; display: block;">(Optional, only used in role-based security.)</small>
+                            </div>
+                            <div class="form-group" style="flex: 0.3;">
+                                <label for="statusSelect">Status:</label>
+                                <select id="statusSelect">
+                                    <option value="Inactive" selected>Inactive</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Temp Use">Temp Use</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="date-row">
+                            <div class="form-group" style="flex: 0.4;">
+                                <label for="startDate">Start Date:</label>
+                                <input type="date" id="startDate" disabled>
+                            </div>
+                            <div class="form-group" style="flex: 0.4;">
+                                <label for="endDate">End Date:</label>
+                                <input type="date" id="endDate" disabled>
+                            </div>
+                            <div class="form-group" style="flex: 0.4;">
+                                <label for="trackUserSelect">Track User:</label>
+                                <select id="trackUserSelect">
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Section Buttons -->
+                        <div class="action-buttons" style="margin-top: 12px; padding: 8px 0; background: transparent; border: none;">
+                            <button type="button" class="btn btn-primary" id="assignBtn" disabled>Add</button>
+                            <button type="button" class="btn btn-primary" id="removeBtn" disabled>Delete</button>
+                            <button type="button" class="btn btn-primary" id="updateBtn" disabled>Save</button>
+                            <button type="button" class="btn btn-primary" id="cancelBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Application Users -->
+                    <div class="form-section">
+                        <h3>Application Users List</h3>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <div class="user-grid" id="userGrid">
+                                    <div style="padding: 20px; text-align: center; color: #6c757d;">
+                                        Select an application to view users
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="./_config.js"></script>
+    <script src="shared-functions.js"></script>
+    <script src="admin-app-user.js"></script>
+</body>
+</html>

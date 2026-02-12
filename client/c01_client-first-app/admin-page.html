@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAccess - Administration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .admin-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-disabled {
+            background: #6c757d;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .back-link {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                margin: 0;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script src="./_config.js"></script>
+    <div class="container">
+        <div class="header">
+            <h1>Administration</h1>
+            <p>Manage system settings and users</p>
+        </div>
+
+        <div class="content">
+            <div class="admin-buttons">
+                <button class="btn btn-primary" onclick="manageUserProfiles()">
+                    Manage User Profiles
+                </button>
+                
+                <button class="btn btn-primary" onclick="manageApplications()">
+                    Applications
+                </button>
+                
+                <button class="btn btn-primary" onclick="manageApplicationUsers()">
+                    Application Users
+                </button>
+                
+                <button class="btn btn-primary" onclick="configureSMTP()">
+                    Configure SMTP Server
+                </button>
+            </div>
+
+            <div class="back-link">
+                <a href="app-launch.html">← Back to Application Launcher</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../lib/acm_Prompts.js"></script>
+    <script>
+        const API_BASE_URL = window.FVARS.SECURE_API_URL;
+
+        function checkAdminSession() {
+            const sessionId = localStorage.getItem('adminSessionId');
+            
+            if (!sessionId) {
+                redirectToLogin('No admin session found. Please login.');
+                return;
+            }
+            
+            console.log('✅ Admin session found');
+        }
+
+        async function redirectToLogin(message) {
+            localStorage.removeItem('adminSessionId');
+            const result = await acm_SecurePopUp(message, "OK:ok");
+            window.location.href = 'index.html';
+        }
+
+        // API call function with session authentication
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const sessionId = localStorage.getItem('adminSessionId');
+            
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionId}`
+                },
+                credentials: 'include'
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        redirectToLogin('Session expired. Please login again.');
+                        return;
+                    } else if (response.status === 403) {
+                        redirectToLogin('Access denied. Admin privileges required.');
+                        return;
+                    }
+                    
+                    let errorMessage = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        // If response is not JSON, use default error message
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                
+                if (error.message.includes('fetch')) {
+                    throw new Error('Cannot connect to server. Please check if the server is running.');
+                }
+                
+                throw error;
+            }
+        }
+
+        function manageUserProfiles() {
+            window.location.href = 'admin-users.html';
+        }
+
+        function manageApplications() {
+            window.location.href = 'admin-applications.html';
+        }
+
+        function manageApplicationUsers() {
+            window.location.href = 'admin-app-user.html';
+        }
+        
+        function configureSMTP() {
+            window.location.href = 'admin-smtp.html';
+        }
+
+        // Initialize page with authentication check
+        window.addEventListener('load', () => {
+            checkAdminSession();
+        });
+    </script>
+</body>
+</html>

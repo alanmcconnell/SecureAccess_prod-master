@@ -1,8 +1,17 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "name": "._",
+            "path": "../._"
+        },
+        {
+            "name": "SecureAccess_prod-master",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "liveServer.settings.port": 55101,
+        "liveServer.settings.AdvanceCustomBrowserCmdLine": "",
+        "liveServer.settings.multiRootWorkspaceName": "SecureAccess_prod-master"
+    }
 }
